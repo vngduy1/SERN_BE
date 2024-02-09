@@ -85,7 +85,6 @@ let deleteUserById = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
       let user = await db.User.findOne({ where: { id: id } })
-      console.log(user)
       if (user) {
         await user.destroy()
       }
