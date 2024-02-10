@@ -2,8 +2,10 @@ const { Sequelize } = require('sequelize')
 const sequelize = new Sequelize('dvn', 'root', null, {
   host: 'localhost',
   dialect: 'mysql',
-  logging: false,
+  // logging: false,
 })
+
+sequelize.options.logging = false
 
 let connectDB = async () => {
   try {
