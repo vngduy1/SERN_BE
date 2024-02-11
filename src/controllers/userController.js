@@ -43,15 +43,19 @@ const handleCreateNewUser = async (req, res) => {
 }
 
 const handleEditUser = async (req, res) => {
-  if (!req.body) {
-    return res.status(200).json({
-      errCode: 1,
-      errMessage: 'missing required parameters',
-    })
+  // if (!data) {
+  //   return res.status(200).json({
+  //     errCode: 1,
+  //     errMessage: 'missing required parameters',
+  //   })
+  // }
+  try {
+    let data = req.body
+    let message = await userService.editUser(data)
+    return res.status(200).json(message)
+  } catch (error) {
+    console.log(error)
   }
-  let data = req.body
-  let message = await userService.editUser(data)
-  return res.status(200).json(message)
 }
 
 const handleDeleteUser = async (req, res) => {
