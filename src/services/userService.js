@@ -9,7 +9,7 @@ const handleUserLogin = (email, password) => {
       let isExist = await checkUserEmail(email)
       if (isExist) {
         let user = await db.User.findOne({
-          attributes: ['email', 'roleId', 'password'],
+          attributes: ['email', 'roleId', 'password', 'firstName', 'lastName'],
           where: {
             email: email,
           },
@@ -183,10 +183,36 @@ const deleteUser = (id) => {
   })
 }
 
+const getAllCodeService = (typeInPut) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!typeInPut) {
+        resolve({
+          errCode: 1,
+          errMessage: 'Missing required from getAllCodeService',
+        })
+      } else {
+        let res = {}
+        let allcode = await db.Allcode.findAll({
+          where: { type: typeInPut },
+        })
+
+        res.errCode = 0
+        res.data = allcode
+
+        resolve(res)
+      }
+    } catch (error) {
+      reject(error)
+    }
+  })
+}
+
 module.exports = {
   handleUserLogin,
   getAllUser,
   createNewUser,
   editUser,
   deleteUser,
+  getAllCodeService,
 }
