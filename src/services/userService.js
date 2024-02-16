@@ -116,6 +116,7 @@ const createNewUser = (data) => {
           gender: data.gender,
           roleId: data.roleId,
           positionId: data.positionId,
+          image: data.avatar,
         })
         resolve({
           errCode: 0,
@@ -131,21 +132,26 @@ const createNewUser = (data) => {
 const editUser = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
+      if (!data.id || !data.roleId || !data.positionId || !data.gender) {
+        resolve({
+          errCode: 2,
+          errMessage: 'Missing required parameters',
+        })
+      }
       let user = await db.User.findOne({
         where: { id: data.id },
         raw: false,
       })
-      if (!user) {
-        resolve({
-          errCode: 2,
-          errMessage: `The user is not exist`,
-        })
-      }
       if (user) {
         user.firstName = data.firstName
         user.lastName = data.lastName
         user.address = data.address
+        user.phonenumber = data.phonenumber
+        user.gender = data.gender
+        user.roleId = data.roleId
+        user.positionId = data.positionId
         await user.save()
+
         resolve({
           errCode: 0,
           errMessage: 'Update success',
