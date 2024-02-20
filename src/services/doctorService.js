@@ -5,7 +5,7 @@ const getTopDoctorHome = (limitInput) => {
     try {
       let users = await db.User.findAll({
         limit: limitInput,
-        // where: { roleId: 'R2' },
+        where: { roleId: 'R2' },
         order: [['createdAt', 'DESC']],
         attributes: { exclude: ['password'] },
         include: [
@@ -41,7 +41,7 @@ const getAllDoctors = () => {
       let doctors = await db.User.findAll({
         where: { roleId: 'R2' },
 
-        attributes: { exclude: ['password', 'image'] },
+        attributes: { exclude: ['password'] },
         raw: true,
         nest: true,
       })
@@ -84,8 +84,62 @@ const saveDetailInfoDoctor = (inputData) => {
           errMessage: 'Save info doctor success',
         })
       }
-    } catch (error) {}
+    } catch (error) {
+      reject({ errCode: -1, errMessage: 'error from saveDetailInfoDoctor' })
+    }
   })
 }
 
-module.exports = { getTopDoctorHome, getAllDoctors, saveDetailInfoDoctor }
+const getDetailDoctorByIdService = (inputId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!inputId) {
+        resolve({
+          errCode: 1,
+          errMessage: 'Missing parameter getDetailDoctorByIdService',
+        })
+      } else {
+        let data = await db.User.findOne({
+          where: { id: inputId },
+          attributes: { exclude: ['password'] },
+          include: [
+            {
+              model: db.Markdown,
+              attributes: ['description', 'contentHTML', 'contentMarkdown'],
+            },
+            {
+              model: db.Allcode,
+              as: 'positionData',
+              attributes: ['valueEn', 'valueVi'],
+            },
+          ],
+          raw: false,
+          nest: true,
+        })
+
+        if (data && data.image) {
+          data.image = new Buffer(data.image, 'base64').toString('binary')
+        }
+
+        if (!data) data = {}
+        resolve({
+          errCode: 0,
+          data: data,
+        })
+      }
+    } catch (error) {
+      console.log(error)
+      reject({
+        errCode: -1,
+        errMessage: 'error from getDetailDoctorByIdService',
+      })
+    }
+  })
+}
+
+module.exports = {
+  getTopDoctorHome,
+  getAllDoctors,
+  saveDetailInfoDoctor,
+  getDetailDoctorByIdService,
+}

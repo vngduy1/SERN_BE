@@ -150,6 +150,9 @@ const editUser = (data) => {
         user.gender = data.gender
         user.roleId = data.roleId
         user.positionId = data.positionId
+        if (data.avatar) {
+          user.image = data.avatar
+        }
         await user.save()
 
         resolve({
