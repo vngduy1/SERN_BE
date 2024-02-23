@@ -200,10 +200,48 @@ const buildCreateSchedule = (data) => {
   })
 }
 
+const getScheduleByDate = (doctorId, date) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!doctorId || !date) {
+        resolve({
+          errCode: 1,
+          errMessage: 'Missing from getScheduleByDate',
+        })
+      } else {
+        let data = await db.Schedule.findAll({
+          where: {
+            doctorId: doctorId,
+            date: date,
+          },
+        })
+
+        if (!data) {
+          data = []
+        }
+
+        resolve({
+          errCode: 0,
+          data: data,
+          errMessage: 'success fully',
+        })
+      }
+    } catch (error) {
+      reject(
+        resolve({
+          errCode: 2,
+          errMessage: 'Missing from err getScheduleByDate',
+        }),
+      )
+    }
+  })
+}
+
 module.exports = {
   getTopDoctorHome,
   getAllDoctors,
   saveDetailInfoDoctor,
   getDetailDoctorByIdService,
   buildCreateSchedule,
+  getScheduleByDate,
 }
