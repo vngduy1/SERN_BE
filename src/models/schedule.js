@@ -4,6 +4,12 @@ module.exports = (sequelize, DataTypes) => {
   class Schedule extends Model {
     static associate(models) {
       //Định danh các mối quan hệ
+
+      Schedule.belongsTo(models.Allcode, {
+        foreignKey: 'timeType',
+        targetKey: 'keyMap',
+        as: 'timeTypeData',
+      })
     }
   }
   Schedule.init(
