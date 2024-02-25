@@ -35,6 +35,10 @@ let initWebRoutes = (app) => {
     '/api/get-schedule-doctor-by-date',
     doctorController.getScheduleByDate,
   )
+  router.get(
+    '/api/get-extra-info-doctor-by-id',
+    doctorController.getExtraInfoDoctorById,
+  )
 
   return app.use('/', router)
 }

@@ -114,12 +114,12 @@ const saveDetailInfoDoctor = (inputData) => {
         })
         if (doctorInfo) {
           //update
-          doctorMarkdown.priceId = inputData.selectedPrice
-          doctorMarkdown.paymentId = inputData.selectedPayment
-          doctorMarkdown.provinceId = inputData.selectedProvince
-          doctorMarkdown.nameClinic = inputData.nameClinic
-          doctorMarkdown.addressClinic = inputData.addressClinic
-          doctorMarkdown.note = inputData.note
+          doctorInfo.priceId = inputData.selectedPrice
+          doctorInfo.paymentId = inputData.selectedPayment
+          doctorInfo.provinceId = inputData.selectedProvince
+          doctorInfo.nameClinic = inputData.nameClinic
+          doctorInfo.addressClinic = inputData.addressClinic
+          doctorInfo.note = inputData.note
           await doctorInfo.save()
         } else {
           //create
@@ -139,6 +139,7 @@ const saveDetailInfoDoctor = (inputData) => {
         })
       }
     } catch (error) {
+      console.log(error)
       reject({ errCode: -1, errMessage: 'error from saveDetailInfoDoctor' })
     }
   })
@@ -165,6 +166,29 @@ const getDetailDoctorByIdService = (inputId) => {
               model: db.Allcode,
               as: 'positionData',
               attributes: ['valueEn', 'valueVi'],
+            },
+            {
+              model: db.Doctor_Info,
+              attributes: {
+                exclude: ['id', 'doctorId'],
+              },
+              include: [
+                {
+                  model: db.Allcode,
+                  as: 'priceTypeData',
+                  attributes: ['valueEn', 'valueVi'],
+                },
+                {
+                  model: db.Allcode,
+                  as: 'paymentTypeData',
+                  attributes: ['valueEn', 'valueVi'],
+                },
+                {
+                  model: db.Allcode,
+                  as: 'provinceTypeData',
+                  attributes: ['valueEn', 'valueVi'],
+                },
+              ],
             },
           ],
           raw: false,
@@ -273,6 +297,60 @@ const getScheduleByDate = (doctorId, date) => {
   })
 }
 
+const getExtraInfoDoctorById = (idInput) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!idInput) {
+        resolve({
+          errCode: 1,
+          errMessage: 'Missing from getExtraInfoDoctorById',
+        })
+      } else {
+        let data = await db.Doctor_Info.findOne({
+          where: {
+            doctorId: idInput,
+          },
+          attributes: {
+            exclude: ['id', 'doctorId'],
+          },
+          include: [
+            {
+              model: db.Allcode,
+              as: 'priceTypeData',
+              attributes: ['valueEn', 'valueVi'],
+            },
+            {
+              model: db.Allcode,
+              as: 'paymentTypeData',
+              attributes: ['valueEn', 'valueVi'],
+            },
+            {
+              model: db.Allcode,
+              as: 'provinceTypeData',
+              attributes: ['valueEn', 'valueVi'],
+            },
+          ],
+          raw: false,
+          nest: true,
+        })
+        if (!data) data = {}
+        resolve({
+          errCode: 0,
+          data: data,
+          errMessage: 'success fully',
+        })
+      }
+    } catch (error) {
+      reject(
+        resolve({
+          errCode: 2,
+          errMessage: 'Missing from err getExtraInfoDoctorById',
+        }),
+      )
+    }
+  })
+}
+
 module.exports = {
   getTopDoctorHome,
   getAllDoctors,
@@ -280,4 +358,5 @@ module.exports = {
   getDetailDoctorByIdService,
   buildCreateSchedule,
   getScheduleByDate,
+  getExtraInfoDoctorById,
 }
