@@ -1,6 +1,12 @@
 import db from '../models/index'
 require('dotenv').config()
 import emailService from './emailService'
+import { v4 as uuidv4 } from 'uuid'
+
+let buildUrlEmail = (doctorId, token) => {
+  let result = `${process.env.URL_REACT}/verify-booking?token=${token}&doctorId=${doctorId}`
+  return result
+}
 
 const postBookAppointment = (data) => {
   return new Promise(async (resolve, reject) => {
@@ -17,13 +23,15 @@ const postBookAppointment = (data) => {
           errMessage: 'Missing parameter',
         })
       } else {
+        let token = uuidv4()
+
         await emailService.sendSimpleEmail({
           receiverEmail: data.email,
           patientName: data.fullName,
           time: data.timeString,
           doctorName: data.doctorName,
           language: data.language,
-          redirectLink: 'https://www.youtube.com/',
+          redirectLink: buildUrlEmail(data.doctorId, token),
         })
 
         let user = await db.User.findOrCreate({
@@ -48,6 +56,7 @@ const postBookAppointment = (data) => {
               patientId: user[0].id,
               date: data.date,
               timeType: data.timeType,
+              token: token,
             },
           })
         }
@@ -68,6 +77,49 @@ const postBookAppointment = (data) => {
   })
 }
 
+const postVerifyBookAppointment = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!data.token || !data.doctorId) {
+        resolve({
+          errCode: 1,
+          errMessage: 'Missing parameter',
+        })
+      } else {
+        let appointment = await db.Booking.findOne({
+          where: {
+            doctorId: data.doctorId,
+            token: data.token,
+            statusId: 'S1',
+          },
+          raw: false,
+        })
+        if (appointment) {
+          appointment.statusId = 'S2'
+          await appointment.save()
+          resolve({
+            errCode: 0,
+            errMessage: 'Update the appointment success',
+          })
+        } else {
+          resolve({
+            errCode: 2,
+            errMessage:
+              'Appointment schedule has been activated or does not exist !!',
+          })
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      reject({
+        errCode: 2,
+        errMessage: 'error from postVerifyBookAppointment',
+      })
+    }
+  })
+}
+
 module.exports = {
   postBookAppointment,
+  postVerifyBookAppointment,
 }
