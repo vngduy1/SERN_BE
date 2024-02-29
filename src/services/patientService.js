@@ -16,8 +16,11 @@ const postBookAppointment = (data) => {
         !data.doctorId ||
         !data.timeType ||
         !data.date ||
-        !data.fullName
+        !data.fullName ||
+        !data.selectedGender ||
+        !data.address
       ) {
+        console.log(data)
         resolve({
           errCode: 1,
           errMessage: 'Missing parameter',
@@ -42,7 +45,11 @@ const postBookAppointment = (data) => {
           defaults: {
             email: data.email,
             roleId: 'R3',
+            address: data.address,
+            gender: data.selectedGender,
+            firstName: data.fullName,
           },
+          raw: true,
         })
 
         if (user && user[0]) {
