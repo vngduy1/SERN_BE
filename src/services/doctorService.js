@@ -1,6 +1,7 @@
 import db from '../models/index'
 require('dotenv').config()
 import _ from 'lodash'
+import emailService from './emailService'
 
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
 
@@ -456,7 +457,7 @@ const getListPatientForDoctor = (doctorId, date) => {
       if (!doctorId || !date) {
         resolve({
           errCode: 1,
-          errMessage: 'Missing from getListPatientForDoctor',
+          errMessage: 'Missing required getListPatientForDoctor',
         })
       } else {
         let data = await db.Booking.findAll({
@@ -505,6 +506,46 @@ const getListPatientForDoctor = (doctorId, date) => {
   })
 }
 
+const sendRemedy = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!data.email || !data.doctorId || !data.patientId || !data.timeType) {
+        resolve({
+          errCode: 1,
+          errMessage: 'Missing required sendRemedy',
+        })
+      } else {
+        let appointment = await db.Booking.findOne({
+          where: {
+            doctorId: data.doctorId,
+            patientId: data.patientId,
+            timeType: data.timeType,
+            statusId: 'S2',
+          },
+          raw: false,
+        })
+        if (appointment) {
+          appointment.statusId = 'S3'
+          await appointment.save()
+        }
+        await emailService.sendAttachments(data)
+        resolve({
+          errCode: 0,
+          errMessage: 'email success',
+        })
+      }
+    } catch (error) {
+      console.log(error)
+      reject(
+        resolve({
+          errCode: 2,
+          errMessage: 'Missing from err sendRemedy',
+        }),
+      )
+    }
+  })
+}
+
 module.exports = {
   getTopDoctorHome,
   getAllDoctors,
@@ -515,4 +556,5 @@ module.exports = {
   getExtraInfoDoctorById,
   getProfileDoctorById,
   getListPatientForDoctor,
+  sendRemedy,
 }
